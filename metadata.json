@@ -1,0 +1,7 @@
+{
+  "uuid": "scape-audio@rhyssaldanha.org",
+  "name": "Scape Audio",
+  "description": "Switches audio output to the Fractal Scape headset when it is lifted off its dock, and back when docked.",
+  "shell-version": ["48", "50", "51"],
+  "url": ""
+}
