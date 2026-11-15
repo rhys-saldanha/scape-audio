@@ -47,6 +47,15 @@ def scape_sink():
     return None
 
 
+def fallback_sink():
+    # shortcut: first non-Scape, non-controller sink; make it configurable if this picks wrongly
+    for line in pactl('list', 'short', 'sinks').splitlines():
+        name = line.split('\t')[1]
+        if 'Fractal_Fractal_Scape' not in name and 'DualSense' not in name:
+            return name
+    return None
+
+
 def main():
     fd = None
     state = None
@@ -76,8 +85,11 @@ def main():
                 if current != sink:
                     previous = current
                     pactl('set-default-sink', sink)
-            elif not state and previous:
-                pactl('set-default-sink', previous)
+            elif not state:
+                # previous is unset when the daemon started with the Scape already the default
+                target = previous or fallback_sink()
+                if target:
+                    pactl('set-default-sink', target)
                 previous = None
         time.sleep(0.5)
 
