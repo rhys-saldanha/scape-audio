@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Route audio to the Fractal Scape while it is off its dock, and back when docked.
 
-The dongle (36bc:0001) answers the HID "get device state" query (report 2, 0xF1 0x21)
-only while the headset is awake; docked it stays silent. No answer = docked.
+The dongle (36bc:0001) answers the HID query 02 11 21 at all times. Byte 4 of the raw
+reply is 1 while the headset is awake and 0 while it is docked. No answer is treated as docked.
 """
 import glob
 import os
@@ -27,12 +27,9 @@ def lifted(fd):
             os.read(fd, 128)
     except BlockingIOError:
         pass
-    os.write(fd, bytes([2, 0xF1, 0x21] + [0] * 61))
+    os.write(fd, bytes([2, 0x11, 0x21] + [0] * 61))
     ready, _, _ = select.select([fd], [], [], 0.4)
-    if ready:
-        os.read(fd, 128)
-        return True
-    return False
+    return bool(ready) and os.read(fd, 128)[4] == 1
 
 
 def pactl(*args):
